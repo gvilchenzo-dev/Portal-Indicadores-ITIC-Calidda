@@ -555,7 +555,7 @@ body::after {
 <!-- ─── TOPBAR ─────────────────────────────────────── -->
 <header class="topbar">
   <div class="topbar-brand">
-    <img src="image_6cfa26.png" class="brand-logo-img" alt="Cálidda">
+    <img src="calidda.png" class="brand-logo-img" alt="Cálidda">
     <div class="brand-text">
       <div class="brand-name">PORTAL C&I</div>
       <div class="brand-sub">Comercios e Inmobiliarias</div>
@@ -571,7 +571,7 @@ body::after {
   </div>
 
   <div class="topbar-right">
-    <img src="image_6cfa2b.png" class="logo-itic" alt="ITIC Group">
+    <img src="itic.png" class="logo-itic" alt="ITIC Group">
     <div class="topbar-divider"></div>
     <div class="live-badge">
       <div class="live-dot"></div>
@@ -611,26 +611,26 @@ body::after {
       <div class="nav-divider"></div>
       <div class="nav-section-label">Gestión C&I</div>
 
-      <!-- Módulo: Calidad y Servicio -->
-      <a class="nav-item" data-view="dash" data-dash="dashboards/calidad.html" onclick="navigate('dash', this, 'Calidad y Servicio')">
+      <!-- Módulo: Atención al Cliente -->
+      <a class="nav-item" data-dash="dashboards/calidad.html" onclick="openDash('dashboards/calidad.html', 'Atención al Cliente')">
         <div class="nav-icon"><i class="fa-solid fa-headset"></i></div>
         <div class="nav-text">
-          <span class="nav-label">Calidad y Servicio</span>
+          <span class="nav-label">Atención al Cliente</span>
           <span class="nav-sublabel">PQR y WhatsApp</span>
         </div>
       </a>
 
-      <!-- Módulo: Facturación V4 -->
-      <a class="nav-item" data-view="dash" data-dash="dashboards/facturacion.html" onclick="navigate('dash', this, 'Facturación V4')">
+      <!-- Módulo: Equipo de Facturación -->
+      <a class="nav-item" data-dash="dashboards/facturacion.html" onclick="openDash('dashboards/facturacion.html', 'Equipo de Facturación')">
         <div class="nav-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
         <div class="nav-text">
-          <span class="nav-label">Facturación V4</span>
+          <span class="nav-label">Equipo de Facturación</span>
           <span class="nav-sublabel">Analítica general</span>
         </div>
       </a>
 
       <!-- Módulo: Facturación CPNO -->
-      <a class="nav-item" data-view="dash" data-dash="dashboards/cpno.html" onclick="navigate('dash', this, 'Facturación CPNO')">
+      <a class="nav-item" data-dash="dashboards/cpno.html" onclick="openDash('dashboards/cpno.html', 'Facturación CPNO')">
         <div class="nav-icon"><i class="fa-solid fa-chart-pie"></i></div>
         <div class="nav-text">
           <span class="nav-label">Facturación CPNO</span>
@@ -646,6 +646,14 @@ body::after {
         <div class="nav-text">
           <span class="nav-label">Pantalla completa</span>
           <span class="nav-sublabel">Modo presentación</span>
+        </div>
+      </a>
+
+      <a class="nav-item" onclick="printCurrent()">
+        <div class="nav-icon"><i class="fa-solid fa-print"></i></div>
+        <div class="nav-text">
+          <span class="nav-label">Imprimir / PDF</span>
+          <span class="nav-sublabel">Exportar vista actual</span>
         </div>
       </a>
 
@@ -719,12 +727,12 @@ body::after {
 
       <div class="dash-grid" id="dashGrid">
 
-        <!-- Tarjeta: Calidad y Servicio (PQRs & WhatsApp) -->
-        <div class="dash-card" onclick="openDash('dashboards/calidad.html', 'Calidad y Servicio')">
+        <!-- Tarjeta: Atención al Cliente (PQRs & WhatsApp) -->
+        <div class="dash-card" onclick="openDash('dashboards/calidad.html', 'Atención al Cliente')">
           <div class="dash-card-header">
             <div class="dash-card-icon blue"><i class="fa-solid fa-headset"></i></div>
             <div class="dash-card-meta">
-              <div class="dash-card-name">Calidad y Servicio</div>
+              <div class="dash-card-name">Atención al Cliente</div>
               <div class="dash-card-desc">Monitoreo de PQR, SLAs, experiencia en WhatsApp, tipificación y encuestas NPS.</div>
             </div>
             <span class="dash-card-status live">LIVE</span>
@@ -742,12 +750,12 @@ body::after {
           </div>
         </div>
 
-        <!-- Tarjeta: Facturación V4 -->
-        <div class="dash-card" onclick="openDash('dashboards/facturacion.html', 'Facturación V4')">
+        <!-- Tarjeta: Equipo de Facturación -->
+        <div class="dash-card" onclick="openDash('dashboards/facturacion.html', 'Equipo de Facturación')">
           <div class="dash-card-header">
             <div class="dash-card-icon green"><i class="fa-solid fa-file-invoice-dollar"></i></div>
             <div class="dash-card-meta">
-              <div class="dash-card-name">Facturación V4</div>
+              <div class="dash-card-name">Equipo de Facturación</div>
               <div class="dash-card-desc">Analítica avanzada de facturación, efectividad comercial y exactitud de Notas de Crédito.</div>
             </div>
             <span class="dash-card-status live">LIVE</span>
@@ -867,6 +875,7 @@ function openDash(path, name) {
   // Find the matching nav item and activate it
   const navItem = [...document.querySelectorAll('.nav-item')].find(el =>
     el.dataset.dash === path);
+  
   navigate('dash', navItem, name);
 
   // Update frame toolbar
@@ -905,6 +914,15 @@ function openFullscreen() {
     ? document.getElementById('dash-iframe')
     : document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen();
+}
+
+function printCurrent() {
+  if (currentDash) {
+    const w = window.open(currentDash, '_blank');
+    w.onload = () => w.print();
+  } else {
+    window.print();
+  }
 }
 
 /* ─── SIDEBAR COLLAPSE ─────────────────────────── */
