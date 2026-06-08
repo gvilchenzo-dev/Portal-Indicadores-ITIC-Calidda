@@ -20,7 +20,7 @@
   --accent:    #00a8ff;
   --accent2:   #00d2ff;
   --accent3:   #ffb347;
-  --success:   #00e676; /* Verde ITIC */
+  --success:   #00e676; 
   --warn:      #ff8c42;
   --danger:    #ff4d4d;
   --text:      #f0f4fa;
@@ -104,7 +104,6 @@ body::after {
   box-shadow: 0 0 10px rgba(255,255,255,0.1);
 }
 
-.brand-text {}
 .brand-name {
   font-family: var(--font-display);
   font-size: 24px;
@@ -444,6 +443,7 @@ body::after {
 .dash-card-icon.blue  { background: rgba(0,168,255,0.12); color: var(--accent);  box-shadow: 0 4px 12px rgba(0,168,255,0.15); }
 .dash-card-icon.green { background: rgba(0,230,118,0.1);  color: var(--success); box-shadow: 0 4px 12px rgba(0,230,118,0.12); }
 .dash-card-icon.purple{ background: rgba(160,100,255,0.1); color: #a064ff;        box-shadow: 0 4px 12px rgba(160,100,255,0.12);}
+.dash-card-icon.orange{ background: rgba(255,140,66,0.1);  color: var(--warn);    box-shadow: 0 4px 12px rgba(255,140,66,0.12);}
 
 .dash-card-meta { flex: 1; }
 .dash-card-name {
@@ -521,9 +521,18 @@ body::after {
 }
 .frame-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,168,255,0.08); }
 
-#dash-iframe {
-  flex: 1; border: none;
-  display: block; width: 100%; height: 100%;
+/* Custom Frame Container for Multiple Iframes */
+#iframe-container {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  background: var(--bg);
+}
+.dash-iframe-instance {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: none; /* Ocultos por defecto */
 }
 
 /* ─── LOADING OVERLAY ──────────────────────────────────────── */
@@ -552,7 +561,6 @@ body::after {
 
 <div class="ambient"></div>
 
-<!-- ─── TOPBAR ─────────────────────────────────────── -->
 <header class="topbar">
   <div class="topbar-brand">
     <img src="calidda.png" class="brand-logo-img" alt="Cálidda">
@@ -590,10 +598,8 @@ body::after {
   </div>
 </header>
 
-<!-- ─── LAYOUT ─────────────────────────────────────── -->
 <div class="layout">
 
-  <!-- ─── SIDEBAR ──────────────────────────────────── -->
   <nav class="sidebar" id="sidebar">
 
     <div class="sidebar-scroll">
@@ -611,7 +617,6 @@ body::after {
       <div class="nav-divider"></div>
       <div class="nav-section-label">Gestión C&I</div>
 
-      <!-- Módulo: Atención al Cliente -->
       <a class="nav-item" data-dash="dashboards/calidad.html" onclick="openDash('dashboards/calidad.html', 'Atención al Cliente')">
         <div class="nav-icon"><i class="fa-solid fa-headset"></i></div>
         <div class="nav-text">
@@ -620,7 +625,14 @@ body::after {
         </div>
       </a>
 
-      <!-- Módulo: Equipo de Facturación -->
+      <a class="nav-item" data-dash="dashboards/pqr.html" onclick="openDash('dashboards/pqr.html', 'Atención de PQR')">
+        <div class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <div class="nav-text">
+          <span class="nav-label">Atención de PQR</span>
+          <span class="nav-sublabel">Casos y Gestión</span>
+        </div>
+      </a>
+
       <a class="nav-item" data-dash="dashboards/facturacion.html" onclick="openDash('dashboards/facturacion.html', 'Equipo de Facturación')">
         <div class="nav-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
         <div class="nav-text">
@@ -629,12 +641,19 @@ body::after {
         </div>
       </a>
 
-      <!-- Módulo: Facturación CPNO -->
       <a class="nav-item" data-dash="dashboards/cpno.html" onclick="openDash('dashboards/cpno.html', 'Facturación CPNO')">
         <div class="nav-icon"><i class="fa-solid fa-chart-pie"></i></div>
         <div class="nav-text">
           <span class="nav-label">Facturación CPNO</span>
           <span class="nav-sublabel">Rendimiento Ejecutivos</span>
+        </div>
+      </a>
+
+      <a class="nav-item" data-dash="dashboards/informes_cpno.html" onclick="openDash('dashboards/informes_cpno.html', 'Informes CPNO')">
+        <div class="nav-icon"><i class="fa-solid fa-folder-open"></i></div>
+        <div class="nav-text">
+          <span class="nav-label">Informes CPNO</span>
+          <span class="nav-sublabel">Reportes Consolidados</span>
         </div>
       </a>
 
@@ -659,7 +678,6 @@ body::after {
 
     </div>
     
-    <!-- Sidebar Credits / Footer Info -->
     <div class="sidebar-credits">
       <div style="color: var(--text3); margin-bottom: 12px; line-height: 1.4;">
         <span style="font-weight: 700; color: var(--text2); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;">Coordinador de Equipo ITIC</span><br>
@@ -671,7 +689,6 @@ body::after {
       </div>
     </div>
 
-    <!-- Sidebar footer Actions -->
     <div class="sidebar-footer">
       <button class="sidebar-collapse-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-chevrons-left" id="collapseIcon" style="font-size:12px;"></i>
@@ -680,10 +697,8 @@ body::after {
     </div>
   </nav>
 
-  <!-- ─── MAIN ──────────────────────────────────────── -->
   <main class="main">
 
-    <!-- HOME VIEW -->
     <div id="view-home" class="active">
 
       <div class="home-hero">
@@ -694,12 +709,11 @@ body::after {
         </p>
       </div>
 
-      <!-- Stats summary row -->
       <div class="home-stats">
         <div class="stat-pill">
           <div class="stat-pill-icon blue"><i class="fa-solid fa-table-columns"></i></div>
           <div>
-            <div class="stat-pill-val" id="statDashCount">3</div>
+            <div class="stat-pill-val" id="statDashCount">5</div>
             <div class="stat-pill-lbl">Dashboards activos</div>
           </div>
         </div>
@@ -719,7 +733,6 @@ body::after {
         </div>
       </div>
 
-      <!-- Dashboards grid -->
       <div class="section-heading">
         <span class="section-heading-text">Módulos Activos</span>
         <div class="section-heading-line"></div>
@@ -727,13 +740,12 @@ body::after {
 
       <div class="dash-grid" id="dashGrid">
 
-        <!-- Tarjeta: Atención al Cliente (PQRs & WhatsApp) -->
         <div class="dash-card" onclick="openDash('dashboards/calidad.html', 'Atención al Cliente')">
           <div class="dash-card-header">
             <div class="dash-card-icon blue"><i class="fa-solid fa-headset"></i></div>
             <div class="dash-card-meta">
               <div class="dash-card-name">Atención al Cliente</div>
-              <div class="dash-card-desc">Monitoreo de PQR, SLAs, experiencia en WhatsApp, tipificación y encuestas NPS.</div>
+              <div class="dash-card-desc">Monitoreo de SLAs, experiencia en WhatsApp, tipificación y encuestas NPS.</div>
             </div>
             <span class="dash-card-status live">LIVE</span>
           </div>
@@ -750,7 +762,28 @@ body::after {
           </div>
         </div>
 
-        <!-- Tarjeta: Equipo de Facturación -->
+        <div class="dash-card" onclick="openDash('dashboards/pqr.html', 'Atención de PQR')">
+          <div class="dash-card-header">
+            <div class="dash-card-icon orange"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="dash-card-meta">
+              <div class="dash-card-name">Atención de PQR</div>
+              <div class="dash-card-desc">Gestión específica de reclamos, trazabilidad de atención y métricas operativas PQR.</div>
+            </div>
+            <span class="dash-card-status live">LIVE</span>
+          </div>
+          <div class="dash-card-body">
+            <div class="dash-card-tags">
+              <span class="dash-tag">Gestión</span>
+              <span class="dash-tag">Reclamos</span>
+              <span class="dash-tag">Tiempos</span>
+            </div>
+          </div>
+          <div class="dash-card-footer">
+            <span class="dash-card-updated"><i class="fa-regular fa-clock" style="margin-right:5px;"></i>Actualizado hoy</span>
+            <button class="dash-open-btn">Abrir <i class="fa-solid fa-arrow-right" style="font-size:10px;"></i></button>
+          </div>
+        </div>
+
         <div class="dash-card" onclick="openDash('dashboards/facturacion.html', 'Equipo de Facturación')">
           <div class="dash-card-header">
             <div class="dash-card-icon green"><i class="fa-solid fa-file-invoice-dollar"></i></div>
@@ -773,7 +806,6 @@ body::after {
           </div>
         </div>
 
-        <!-- Tarjeta: Facturación CPNO (Ejecutivos) -->
         <div class="dash-card" onclick="openDash('dashboards/cpno.html', 'Facturación CPNO')">
           <div class="dash-card-header">
             <div class="dash-card-icon purple"><i class="fa-solid fa-chart-pie"></i></div>
@@ -795,13 +827,32 @@ body::after {
             <button class="dash-open-btn">Abrir <i class="fa-solid fa-arrow-right" style="font-size:10px;"></i></button>
           </div>
         </div>
+
+        <div class="dash-card" onclick="openDash('dashboards/informes_cpno.html', 'Informes CPNO')">
+          <div class="dash-card-header">
+            <div class="dash-card-icon blue"><i class="fa-solid fa-folder-open"></i></div>
+            <div class="dash-card-meta">
+              <div class="dash-card-name">Informes CPNO</div>
+              <div class="dash-card-desc">Consolidado de informes, auditorías y métricas generales del equipo CPNO.</div>
+            </div>
+            <span class="dash-card-status live">LIVE</span>
+          </div>
+          <div class="dash-card-body">
+            <div class="dash-card-tags">
+              <span class="dash-tag">Informes</span>
+              <span class="dash-tag">Auditoría</span>
+              <span class="dash-tag">Operaciones</span>
+            </div>
+          </div>
+          <div class="dash-card-footer">
+            <span class="dash-card-updated"><i class="fa-regular fa-clock" style="margin-right:5px;"></i>Hoy</span>
+            <button class="dash-open-btn">Abrir <i class="fa-solid fa-arrow-right" style="font-size:10px;"></i></button>
+          </div>
+        </div>
         
       </div>
 
-    </div><!-- end view-home -->
-
-    <!-- FRAME VIEW -->
-    <div id="view-frame">
+    </div><div id="view-frame">
       <div class="frame-toolbar">
         <button class="frame-back" onclick="navigate('home', null, 'Inicio')">
           <i class="fa-solid fa-arrow-left"></i> Volver
@@ -812,22 +863,21 @@ body::after {
         </div>
         <div class="frame-url" id="frameUrl"></div>
         <div class="frame-actions">
-          <button class="frame-btn" title="Recargar" onclick="reloadFrame()"><i class="fa-solid fa-rotate-right"></i></button>
+          <button class="frame-btn" title="Recargar este dashboard" onclick="reloadFrame()"><i class="fa-solid fa-rotate-right"></i></button>
           <button class="frame-btn" title="Abrir en nueva pestaña" onclick="openNewTab()"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
           <button class="frame-btn" title="Pantalla completa" onclick="openFullscreen()"><i class="fa-solid fa-expand"></i></button>
         </div>
       </div>
 
-      <div style="position:relative;flex:1;display:flex;">
-        <div class="frame-loader" id="frameLoader">
+      <div style="position:relative;flex:1;display:flex; flex-direction:column;" id="iframe-wrapper">
+        <div class="frame-loader hidden" id="frameLoader">
           <div class="loader-ring"></div>
           <div class="loader-text">Cargando dashboard…</div>
         </div>
-        <iframe id="dash-iframe" src="about:blank" onload="onIframeLoad()"></iframe>
+        
+        <div id="iframe-container"></div>
       </div>
-    </div><!-- end view-frame -->
-
-  </main>
+    </div></main>
 </div>
 
 <script>
@@ -843,6 +893,7 @@ setInterval(updateClock, 1000);
 /* ─── STATE ────────────────────────────────────── */
 let currentDash = null;
 let sidebarCollapsed = false;
+let loadedIframes = {}; // Almacena en memoria las pestañas (iframes) abiertas
 
 /* ─── NAVIGATE ─────────────────────────────────── */
 function navigate(view, clickedEl, title) {
@@ -868,14 +919,12 @@ function navigate(view, clickedEl, title) {
   document.getElementById('view-frame').classList.toggle('active', view === 'dash');
 }
 
-/* ─── OPEN DASHBOARD ───────────────────────────── */
+/* ─── OPEN DASHBOARD (MULTI-IFRAME CACHE LOGIC) ── */
 function openDash(path, name) {
   currentDash = path;
 
   // Find the matching nav item and activate it
-  const navItem = [...document.querySelectorAll('.nav-item')].find(el =>
-    el.dataset.dash === path);
-  
+  const navItem = [...document.querySelectorAll('.nav-item')].find(el => el.dataset.dash === path);
   navigate('dash', navItem, name);
 
   // Update frame toolbar
@@ -883,26 +932,48 @@ function openDash(path, name) {
     `<i class="fa-solid fa-chart-bar" style="color:var(--accent);"></i><span>${name}</span>`;
   document.getElementById('frameUrl').textContent = path;
 
-  // Show loader and load iframe
-  document.getElementById('frameLoader').classList.remove('hidden');
-  document.getElementById('dash-iframe').src = path;
-
   // Update last access stat
   const now = new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
   document.getElementById('statLastUpdate').textContent = now;
-}
 
-function onIframeLoad() {
-  setTimeout(() => {
-    document.getElementById('frameLoader').classList.add('hidden');
-  }, 300);
+  // 1. Ocultar todos los iframes previamente cargados
+  Object.values(loadedIframes).forEach(ifr => {
+    ifr.style.display = 'none';
+  });
+
+  // 2. Verificar si el iframe de esta ruta ya existe
+  if (loadedIframes[path]) {
+    // Si existe, simplemente lo mostramos (manteniendo su estado, datos y variables)
+    loadedIframes[path].style.display = 'block';
+    document.getElementById('frameLoader').classList.add('hidden'); 
+  } else {
+    // Si no existe, creamos un nuevo elemento iframe y lo agregamos al contenedor
+    document.getElementById('frameLoader').classList.remove('hidden');
+    
+    const newIframe = document.createElement('iframe');
+    newIframe.className = 'dash-iframe-instance';
+    newIframe.src = path;
+    
+    // Al terminar de cargar la primera vez, quitamos la pantalla de carga
+    newIframe.onload = () => {
+      document.getElementById('frameLoader').classList.add('hidden');
+    };
+
+    document.getElementById('iframe-container').appendChild(newIframe);
+    loadedIframes[path] = newIframe; // Guardarlo en caché
+    
+    // Mostramos el iframe que acabamos de crear
+    newIframe.style.display = 'block';
+  }
 }
 
 /* ─── FRAME CONTROLS ───────────────────────────── */
 function reloadFrame() {
-  const iframe = document.getElementById('dash-iframe');
-  document.getElementById('frameLoader').classList.remove('hidden');
-  iframe.src = iframe.src;
+  if (currentDash && loadedIframes[currentDash]) {
+    document.getElementById('frameLoader').classList.remove('hidden');
+    // Recarga solo el iframe actual
+    loadedIframes[currentDash].src = loadedIframes[currentDash].src;
+  }
 }
 
 function openNewTab() {
@@ -910,14 +981,18 @@ function openNewTab() {
 }
 
 function openFullscreen() {
-  const el = document.getElementById('view-frame').classList.contains('active')
-    ? document.getElementById('dash-iframe')
+  const isDashActive = document.getElementById('view-frame').classList.contains('active');
+  
+  // Poner en pantalla completa solo el dashboard activo si estamos en esa vista
+  const el = (isDashActive && currentDash && loadedIframes[currentDash])
+    ? loadedIframes[currentDash]
     : document.documentElement;
+    
   if (el.requestFullscreen) el.requestFullscreen();
 }
 
 function printCurrent() {
-  if (currentDash) {
+  if (currentDash && document.getElementById('view-frame').classList.contains('active')) {
     const w = window.open(currentDash, '_blank');
     w.onload = () => w.print();
   } else {
