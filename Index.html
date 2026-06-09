@@ -444,6 +444,7 @@ body::after {
 .dash-card-icon.green { background: rgba(0,230,118,0.1);  color: var(--success); box-shadow: 0 4px 12px rgba(0,230,118,0.12); }
 .dash-card-icon.purple{ background: rgba(160,100,255,0.1); color: #a064ff;        box-shadow: 0 4px 12px rgba(160,100,255,0.12);}
 .dash-card-icon.orange{ background: rgba(255,140,66,0.1);  color: var(--warn);    box-shadow: 0 4px 12px rgba(255,140,66,0.12);}
+.dash-card-icon.teal  { background: rgba(45,212,191,0.1);  color: #2dd4bf;        box-shadow: 0 4px 12px rgba(45,212,191,0.12);}
 
 .dash-card-meta { flex: 1; }
 .dash-card-name {
@@ -521,7 +522,6 @@ body::after {
 }
 .frame-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,168,255,0.08); }
 
-/* Custom Frame Container for Multiple Iframes */
 #iframe-container {
   flex: 1;
   width: 100%;
@@ -532,7 +532,7 @@ body::after {
   width: 100%;
   height: 100%;
   border: none;
-  display: none; /* Ocultos por defecto */
+  display: none; 
 }
 
 /* ─── LOADING OVERLAY ──────────────────────────────────────── */
@@ -657,6 +657,14 @@ body::after {
         </div>
       </a>
 
+      <a class="nav-item" data-dash="dashboards/factibilidad.html" onclick="openDash('dashboards/factibilidad.html', 'Solicitud de factibilidad')">
+        <div class="nav-icon"><i class="fa-solid fa-file-signature"></i></div>
+        <div class="nav-text">
+          <span class="nav-label">Solicitud de factibilidad</span>
+          <span class="nav-sublabel">Factibilidad Técnica</span>
+        </div>
+      </a>
+
       <div class="nav-divider"></div>
       <div class="nav-section-label">Herramientas</div>
 
@@ -713,7 +721,7 @@ body::after {
         <div class="stat-pill">
           <div class="stat-pill-icon blue"><i class="fa-solid fa-table-columns"></i></div>
           <div>
-            <div class="stat-pill-val" id="statDashCount">5</div>
+            <div class="stat-pill-val" id="statDashCount">6</div>
             <div class="stat-pill-lbl">Dashboards activos</div>
           </div>
         </div>
@@ -849,10 +857,34 @@ body::after {
             <button class="dash-open-btn">Abrir <i class="fa-solid fa-arrow-right" style="font-size:10px;"></i></button>
           </div>
         </div>
+
+        <div class="dash-card" onclick="openDash('dashboards/factibilidad.html', 'Solicitud de factibilidad')">
+          <div class="dash-card-header">
+            <div class="dash-card-icon teal"><i class="fa-solid fa-file-signature"></i></div>
+            <div class="dash-card-meta">
+              <div class="dash-card-name">Solicitud de factibilidad</div>
+              <div class="dash-card-desc">Seguimiento de factibilidad técnica para nuevos puntos de suministro.</div>
+            </div>
+            <span class="dash-card-status live">LIVE</span>
+          </div>
+          <div class="dash-card-body">
+            <div class="dash-card-tags">
+              <span class="dash-tag">Factibilidad</span>
+              <span class="dash-tag">Obras</span>
+              <span class="dash-tag">Técnico</span>
+            </div>
+          </div>
+          <div class="dash-card-footer">
+            <span class="dash-card-updated"><i class="fa-regular fa-clock" style="margin-right:5px;"></i>Hoy</span>
+            <button class="dash-open-btn">Abrir <i class="fa-solid fa-arrow-right" style="font-size:10px;"></i></button>
+          </div>
+        </div>
         
       </div>
 
-    </div><div id="view-frame">
+    </div>
+
+    <div id="view-frame">
       <div class="frame-toolbar">
         <button class="frame-back" onclick="navigate('home', null, 'Inicio')">
           <i class="fa-solid fa-arrow-left"></i> Volver
@@ -874,14 +906,13 @@ body::after {
           <div class="loader-ring"></div>
           <div class="loader-text">Cargando dashboard…</div>
         </div>
-        
         <div id="iframe-container"></div>
       </div>
-    </div></main>
+    </div>
+  </main>
 </div>
 
 <script>
-/* ─── CLOCK ────────────────────────────────────── */
 function updateClock() {
   const now = new Date();
   document.getElementById('topbarClock').textContent =
@@ -890,18 +921,14 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* ─── STATE ────────────────────────────────────── */
 let currentDash = null;
 let sidebarCollapsed = false;
-let loadedIframes = {}; // Almacena en memoria las pestañas (iframes) abiertas
+let loadedIframes = {}; 
 
-/* ─── NAVIGATE ─────────────────────────────────── */
 function navigate(view, clickedEl, title) {
-  // Update active nav item
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   if (clickedEl) clickedEl.classList.add('active');
 
-  // Update breadcrumb
   const bc = document.getElementById('breadcrumb');
   if (view === 'home') {
     bc.innerHTML = `<i class="fa-solid fa-house" style="font-size:10px;"></i>
@@ -914,100 +941,15 @@ function navigate(view, clickedEl, title) {
       <span class="current">${title}</span>`;
   }
 
-  // Toggle views
   document.getElementById('view-home').classList.toggle('active', view === 'home');
   document.getElementById('view-frame').classList.toggle('active', view === 'dash');
 }
 
-/* ─── OPEN DASHBOARD (MULTI-IFRAME CACHE LOGIC) ── */
 function openDash(path, name) {
   currentDash = path;
-
-  // Find the matching nav item and activate it
   const navItem = [...document.querySelectorAll('.nav-item')].find(el => el.dataset.dash === path);
   navigate('dash', navItem, name);
 
-  // Update frame toolbar
   document.getElementById('frameTitle').innerHTML =
     `<i class="fa-solid fa-chart-bar" style="color:var(--accent);"></i><span>${name}</span>`;
-  document.getElementById('frameUrl').textContent = path;
-
-  // Update last access stat
-  const now = new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
-  document.getElementById('statLastUpdate').textContent = now;
-
-  // 1. Ocultar todos los iframes previamente cargados
-  Object.values(loadedIframes).forEach(ifr => {
-    ifr.style.display = 'none';
-  });
-
-  // 2. Verificar si el iframe de esta ruta ya existe
-  if (loadedIframes[path]) {
-    // Si existe, simplemente lo mostramos (manteniendo su estado, datos y variables)
-    loadedIframes[path].style.display = 'block';
-    document.getElementById('frameLoader').classList.add('hidden'); 
-  } else {
-    // Si no existe, creamos un nuevo elemento iframe y lo agregamos al contenedor
-    document.getElementById('frameLoader').classList.remove('hidden');
-    
-    const newIframe = document.createElement('iframe');
-    newIframe.className = 'dash-iframe-instance';
-    newIframe.src = path;
-    
-    // Al terminar de cargar la primera vez, quitamos la pantalla de carga
-    newIframe.onload = () => {
-      document.getElementById('frameLoader').classList.add('hidden');
-    };
-
-    document.getElementById('iframe-container').appendChild(newIframe);
-    loadedIframes[path] = newIframe; // Guardarlo en caché
-    
-    // Mostramos el iframe que acabamos de crear
-    newIframe.style.display = 'block';
-  }
-}
-
-/* ─── FRAME CONTROLS ───────────────────────────── */
-function reloadFrame() {
-  if (currentDash && loadedIframes[currentDash]) {
-    document.getElementById('frameLoader').classList.remove('hidden');
-    // Recarga solo el iframe actual
-    loadedIframes[currentDash].src = loadedIframes[currentDash].src;
-  }
-}
-
-function openNewTab() {
-  if (currentDash) window.open(currentDash, '_blank');
-}
-
-function openFullscreen() {
-  const isDashActive = document.getElementById('view-frame').classList.contains('active');
-  
-  // Poner en pantalla completa solo el dashboard activo si estamos en esa vista
-  const el = (isDashActive && currentDash && loadedIframes[currentDash])
-    ? loadedIframes[currentDash]
-    : document.documentElement;
-    
-  if (el.requestFullscreen) el.requestFullscreen();
-}
-
-function printCurrent() {
-  if (currentDash && document.getElementById('view-frame').classList.contains('active')) {
-    const w = window.open(currentDash, '_blank');
-    w.onload = () => w.print();
-  } else {
-    window.print();
-  }
-}
-
-/* ─── SIDEBAR COLLAPSE ─────────────────────────── */
-function toggleSidebar() {
-  sidebarCollapsed = !sidebarCollapsed;
-  const sb = document.getElementById('sidebar');
-  sb.classList.toggle('collapsed', sidebarCollapsed);
-  const icon = document.getElementById('collapseIcon');
-  icon.style.transform = sidebarCollapsed ? 'rotate(180deg)' : 'rotate(0)';
-}
-</script>
-</body>
-</html>
+  document.getElementById('frameUrl').textContent = path
