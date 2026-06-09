@@ -481,7 +481,7 @@ body::after {
 }
 .dash-open-btn:hover { background: rgba(0,168,255,0.15); border-color: var(--accent); }
 
-/* ─── IFRAME VIEW ──────────────────────────────────────────── */
+/* ─── IFRAME VIEW & CACHE ──────────────────────────────────── */
 #view-frame {
   flex: 1; display: none; flex-direction: column;
   animation: fadeSlideIn 0.3s ease;
@@ -522,17 +522,32 @@ body::after {
 }
 .frame-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,168,255,0.08); }
 
+/* Nueva estructura sólida para los iFrames guardados en caché */
 #iframe-container {
   flex: 1;
   width: 100%;
   position: relative;
   background: var(--bg);
+  overflow: hidden; 
 }
+
+/* Los iFrames se colocan unos sobre otros. 
+   En vez de "display: none" que resetea la data, usamos opacidad y z-index. */
 .dash-iframe-instance {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   border: none;
-  display: none; 
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.dash-iframe-instance.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 10;
 }
 
 /* ─── LOADING OVERLAY ──────────────────────────────────────── */
@@ -606,7 +621,7 @@ body::after {
 
       <div class="nav-section-label">Principal</div>
 
-      <a class="nav-item active" data-view="home" onclick="navigate('home', this, 'Inicio')">
+      <a class="nav-item active" onclick="navigate('home', this, 'Inicio')">
         <div class="nav-icon"><i class="fa-solid fa-house"></i></div>
         <div class="nav-text">
           <span class="nav-label">Inicio</span>
@@ -926,8 +941,15 @@ let sidebarCollapsed = false;
 let loadedIframes = {}; 
 
 function navigate(view, clickedEl, title) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  if (clickedEl) clickedEl.classList.add('active');
+  // Limpiar seleccionados (Forma segura en vez de forEach)
+  const items = document.querySelectorAll('.nav-item');
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.remove('active');
+  }
+  
+  if (clickedEl) {
+    clickedEl.classList.add('active');
+  }
 
   const bc = document.getElementById('breadcrumb');
   if (view === 'home') {
@@ -947,9 +969,115 @@ function navigate(view, clickedEl, title) {
 
 function openDash(path, name) {
   currentDash = path;
-  const navItem = [...document.querySelectorAll('.nav-item')].find(el => el.dataset.dash === path);
+  
+  // Buscar elemento del menú lateral correspondiente para activarlo
+  const navItems = Array.from(document.querySelectorAll('.nav-item'));
+  const navItem = navItems.find(el => el.dataset.dash === path);
+  
   navigate('dash', navItem, name);
 
   document.getElementById('frameTitle').innerHTML =
     `<i class="fa-solid fa-chart-bar" style="color:var(--accent);"></i><span>${name}</span>`;
-  document.getElementById('frameUrl').textContent = path
+  document.getElementById('frameUrl').textContent = path;
+
+  const now = new Date().toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('statLastUpdate').textContent = now;
+
+  // Desactivar TODOS los iframes ocultándolos con CSS
+  const allIframes = Object.values(loadedIframes);
+  for(let i = 0; i < allIframes.length; i++){
+    allIframes[i].classList.remove('active');
+  }
+
+  const loader = document.getElementById('frameLoader');
+
+  if (loadedIframes[path]) {
+    // Si ya existe, lo pasamos al frente
+    loadedIframes[path].classList.add('active');
+    loader.classList.add('hidden'); 
+  } else {
+    // Si no existe, lo creamos
+    loader.classList.remove('hidden');
+    
+    const newIframe = document.createElement('iframe');
+    newIframe.className = 'dash-iframe-instance active';
+    newIframe.src = path;
+    
+    // Función segura para ocultar la pantalla de carga (Maximo 1.5s)
+    let isLoaded = false;
+    const hideLoader = () => {
+      if (!isLoaded) {
+        isLoaded = true;
+        loader.classList.add('hidden');
+      }
+    };
+    
+    newIframe.onload = hideLoader;
+    setTimeout(hideLoader, 1500); // Si falla en cargar (ej. archivo faltante localmente), la pantalla no se congela.
+
+    document.getElementById('iframe-container').appendChild(newIframe);
+    loadedIframes[path] = newIframe;
+  }
+}
+
+function reloadFrame() {
+  if (currentDash && loadedIframes[currentDash]) {
+    document.getElementById('frameLoader').classList.remove('hidden');
+    
+    let isLoaded = false;
+    loadedIframes[currentDash].onload = () => {
+       if (!isLoaded) {
+          isLoaded = true;
+          document.getElementById('frameLoader').classList.add('hidden');
+       }
+    };
+    
+    loadedIframes[currentDash].src = loadedIframes[currentDash].src;
+    
+    setTimeout(() => {
+      if(!isLoaded){
+        isLoaded = true;
+        document.getElementById('frameLoader').classList.add('hidden');
+      }
+    }, 1500);
+  }
+}
+
+function openNewTab() { 
+  if (currentDash) window.open(currentDash, '_blank'); 
+}
+
+function openFullscreen() {
+  const isDashActive = document.getElementById('view-frame').classList.contains('active');
+  const el = (isDashActive && currentDash && loadedIframes[currentDash])
+    ? loadedIframes[currentDash]
+    : document.documentElement;
+  
+  if (el.requestFullscreen) {
+    el.requestFullscreen();
+  } else if (el.webkitRequestFullscreen) { /* Safari */
+    el.webkitRequestFullscreen();
+  } else if (el.msRequestFullscreen) { /* IE11 */
+    el.msRequestFullscreen();
+  }
+}
+
+function printCurrent() {
+  if (currentDash && document.getElementById('view-frame').classList.contains('active')) {
+    const w = window.open(currentDash, '_blank');
+    w.onload = () => { w.print(); };
+  } else { 
+    window.print(); 
+  }
+}
+
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed', sidebarCollapsed);
+  const icon = document.getElementById('collapseIcon');
+  icon.style.transform = sidebarCollapsed ? 'rotate(180deg)' : 'rotate(0)';
+}
+</script>
+</body>
+</html>
